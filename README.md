@@ -13,6 +13,8 @@ To learn how to build your integration, see our [Integration guide](https://docs
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+### Visit our live [Demo](https://demo.bagisto.com:2087/)
+
 ## How to start if you want to try out the integration
 
 ```
@@ -23,7 +25,7 @@ vsf init <project_name> && cd <project_name> && yarn && yarn dev
 ```
 
 ## How to start if you want to contribute?
-Want to contribute or have any queries? Write us on: [Bagisto Support](mailto:support@bagisto.com).
+Want to contribute or have any queries? Write us on: [Bagisto Support](mailto:support@bagisto.com) ❤️.
 
 ### Requirements:
 - NodeJS v16 or later
