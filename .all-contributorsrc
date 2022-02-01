@@ -1,0 +1,14 @@
+{
+  "projectName": "bagisto",
+  "projectOwner": "vuestorefront",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 80,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [],
+  "contributorsPerLine": 5
+}
