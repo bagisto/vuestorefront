@@ -134,15 +134,6 @@
               @click:wishlist="!isInWishlist({ product }) ? addItemToWishlist({ product }) : removeProductFromWishlist(product)"
               @click:add-to-cart="addToCart({ product, quantity: Number(productsQuantity[product._id]) })"
             >
-              <template #configuration>
-                <SfProperty
-                  class="desktop-only"
-                  name="Size"
-                  value="XS"
-                  style="margin: 0 0 1rem 0;"
-                />
-                <SfProperty class="desktop-only" name="Color" value="white" />
-              </template>
               <template #actions>
                 <SfButton
                   class="sf-button--text desktop-only"
@@ -214,13 +205,14 @@ import {
   SfColor,
   SfProperty
 } from '@storefront-ui/vue';
-import { computed, ref } from '@nuxtjs/composition-api';
+import { computed, ref, useRouter } from '@nuxtjs/composition-api';
 import { useCart, useWishlist, productGetters, useFacet, facetGetters, wishlistGetters } from '@vue-storefront/bagisto';
 import { useUiHelpers, useUiState } from '~/composables';
 import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
 import cacheControl from './../helpers/cacheControl';
 import CategoryPageHeader from '~/components/CategoryPageHeader';
+import { useUiNotification} from '~/composables';
 // TODO(addToCart qty, horizontal): https://github.com/vuestorefront/storefront-ui/issues/1606
 export default {
   transition: 'fade',
@@ -231,6 +223,8 @@ export default {
   setup(props, context) {
     const th = useUiHelpers();
     const uiState = useUiState();
+    const router = useRouter();
+    const { send: sendNotification} = useUiNotification();
     const { addItem: addItemToCart, isInCart } = useCart();
     const { addItem: addItemToWishlist, isInWishlist, removeItem: removeItemFromWishlist, wishlist } = useWishlist();
     const { result, search, loading: productListing, error } = useFacet();
@@ -264,11 +258,23 @@ export default {
     };
 
     const addToCart = ({ product, quantity }) => {
-      const { id, sku } = product;
-      addItemToCart({
-        product: { id, sku },
-        quantity
-      });
+      if (product.type === 'configurable') {
+        sendNotification({
+          key: 'product_redirect',
+          message: 'Options are missing for this product.',
+          type: 'warning',
+          title: 'Warning!'
+        });
+        router.push(`/product/${productGetters.getId(product)}`);
+      } else {
+        addItemToCart({ product, quantity: quantity });
+        sendNotification({
+          key: 'product_added',
+          message: 'Product added to cart successfully',
+          type: 'success',
+          title: 'Success!'
+        });
+      }
     };
 
     return {

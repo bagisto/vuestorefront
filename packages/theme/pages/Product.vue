@@ -53,21 +53,34 @@
                 <SfButton class="sf-button--text desktop-only product__guide">
                   {{ $t('Size guide') }}
                 </SfButton>
-                <div>
-                  <ConfigurableOptions
-                    v-if="product.type == 'configurable'"
-                    :product="product"
-                    :form-data="formData" />
-                </div>
-                <SfAddToCart
-                  v-e2e="'product_add-to-cart'"
-                  :stock="stock"
-                  v-model="qty"
-                  :disabled="loading"
-                  :canAddToCart="stock > 0"
-                  class="product__add-to-cart"
-                  @click="addItemToCart({ product, quantity: parseInt(qty) })"
-                />
+                <ValidationObserver v-slot="{ handleSubmit }" tag="div">
+                <form class="form" @submit.prevent="handleSubmit(productFormAction)">
+                  <input
+                      type="hidden"
+                      name="productId"
+                      v-model="formData.productId"
+                  />
+                  <input
+                      type="hidden"
+                      name="quantity"
+                      v-model="formData.quantity"
+                  />
+                  <div>
+                    <ConfigurableOptions
+                      v-if="product.type == 'configurable'"
+                      :product="product"
+                      :form-data="formData" />
+                  </div>
+                  <SfAddToCart
+                    v-e2e="'product_add-to-cart'"
+                    :stock="stock"
+                    v-model="formData.qty"
+                    :disabled="loading"
+                    :canAddToCart="stock > 0"
+                    class="product__add-to-cart"
+                  />
+                </form>
+              </ValidationObserver>
             </div>
             <LazyHydrate when-idle>
               <SfTabs id="tabs" :open-tab="openTab" class="product__tabs" @click:tab="changeTab">
@@ -178,6 +191,8 @@ import {
   SfColor
 } from '@storefront-ui/vue';
 
+import { ValidationProvider, ValidationObserver, extend } from 'vee-validate';
+import { required } from 'vee-validate/dist/rules';
 import InstagramFeed from '~/components/InstagramFeed.vue';
 import ConfigurableOptions from '~/components/Product/ConfigurableOptions.vue';
 import RelatedProducts from '~/components/Product/RelatedProducts.vue';
@@ -189,6 +204,11 @@ import { onSSR } from '@vue-storefront/core';
 import LazyHydrate from 'vue-lazy-hydration';
 import cacheControl from './../helpers/cacheControl';
 import { useUiNotification} from '~/composables';
+
+extend('required', {
+  ...required,
+  message: 'This field is required'
+});
 
 export default {
   name: 'Product',
@@ -254,6 +274,36 @@ export default {
       if (callback && typeof callback === 'function') callback();
     };
 
+    const productFormAction = async () => {
+      const productData = {
+        product: product.value,
+        quantity: formData.value.quantity
+      };
+
+      if (product.value.type === 'configurable') {
+        const superAttributeArray = [];
+        for (const key in formData.value.superAttribute) {
+          if (Object.hasOwnProperty.call(formData.value.superAttribute, key)) {
+            const attributeOptionId = formData.value.superAttribute[key];
+            superAttributeArray.push({attributeId: parseInt(key), attributeOptionId: parseInt(attributeOptionId)});
+          }
+        }
+        productData.customQuery = {superAttribute: superAttributeArray, selectedConfigurableOption: formData.value.selectedConfigurableOption};
+      }
+
+      const productName = productGetters.getName(product.value);
+      await addItem(productData).then(() => {
+        sendNotification({
+          key: 'item_added',
+          title: 'Product added to cart!',
+          message: `Success: ${productName} added to cart successfully.`,
+          icon: 'check',
+          type: 'success'
+        });
+        formData.value.qty = 1;
+      });
+    };
+
     return {
       loading,
       product,
@@ -274,7 +324,8 @@ export default {
       openTab,
       qty,
       addItem,
-      sendNotification
+      sendNotification,
+      productFormAction
     };
   },
   components: {
@@ -301,7 +352,9 @@ export default {
     LazyHydrate,
     MobileStoreBanner,
     AddProductReview,
-    ConfigurableOptions
+    ConfigurableOptions,
+    ValidationProvider,
+    ValidationObserver
   },
   data() {
     return {
@@ -329,21 +382,6 @@ export default {
           'Brand name is the perfect pairing of quality and design. This label creates major everyday vibes with its collection of modern brooches, silver and gold jewellery, or clips it back with hair accessories in geo styles.',
       careInstructions: 'Do not wash!',
     };
-  },
-  methods: {
-    async addItemToCart(productData) {
-      const productName = this.productGetters.getName(productData.product);
-      await this.addItem(productData).then(() => {
-        this.sendNotification({
-          key: 'item_added',
-          title: 'Product added to cart!',
-          message: `Success: ${productName} added to cart successfully.`,
-          icon: 'check',
-          type: 'success'
-        });
-        this.qty = 1;
-      });
-    }
   }
 };
 </script>

@@ -1,4 +1,4 @@
-import { UserOrderGetters } from '@vue-storefront/core';
+import { UserOrderGetters, AgnosticAttribute } from '@vue-storefront/core';
 import type { Order, OrderItem } from '@vue-storefront/bagisto-api';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -136,6 +136,28 @@ function getOrdersTotal(orders: any): number {
   return orders?.total || 0;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getItemAttributes(item: OrderItem, filterByAttributeName?: Array<string>): Record<string, AgnosticAttribute | string> {
+  if (!item || !item?.additional) {
+    return {};
+  }
+
+  const attributes = {};
+  const additionalData = JSON.parse(item?.additional);
+  if (additionalData?.attributes) {
+    for (const attribute in additionalData?.attributes) {
+      if (Object.prototype.hasOwnProperty.call(additionalData?.attributes, attribute)) {
+        const element = additionalData?.attributes[attribute];
+        const attributeName = element.attribute_name;
+
+        attributes[attributeName] = element.option_label;
+      }
+    }
+  }
+
+  return attributes;
+}
+
 export const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getDate,
   getId,
@@ -148,5 +170,6 @@ export const orderGetters: UserOrderGetters<Order, OrderItem> = {
   getItemPrice,
   getFormattedPrice,
   getOrdersTotal,
-  getItemSubTotal
+  getItemSubTotal,
+  getItemAttributes
 };

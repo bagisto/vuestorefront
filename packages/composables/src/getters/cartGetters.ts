@@ -10,6 +10,14 @@ import type { Cart, CartItem } from '@vue-storefront/bagisto-api';
 import { productGetters } from './productGetters';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getItemId(item: CartItem): string {
+  if (!item) {
+    return '';
+  }
+  return item?.id || '';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getItems(cart: Cart): CartItem[] {
   if (!cart) {
     return null;
@@ -54,9 +62,23 @@ function getItemQty(item: CartItem): number {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getItemAttributes(item: CartItem, filterByAttributeName?: Array<string>): Record<string, AgnosticAttribute | string> {
-  return {
-    color: 'red'
-  };
+  if (!item || !item?.additional) {
+    return {};
+  }
+  const attributes = {};
+  const additionalData = JSON.parse(item?.additional);
+  if (additionalData?.attributes) {
+    for (const attribute in additionalData?.attributes) {
+      if (Object.prototype.hasOwnProperty.call(additionalData?.attributes, attribute)) {
+        const element = additionalData?.attributes[attribute];
+        const attributeName = element.attribute_name;
+
+        attributes[attributeName] = element.option_label;
+      }
+    }
+  }
+
+  return attributes;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -134,5 +156,6 @@ export const cartGetters: CartGetters<Cart, CartItem> = {
   getFormattedPrice,
   getTotalItems,
   getCoupons,
-  getDiscounts
+  getDiscounts,
+  getItemId
 };

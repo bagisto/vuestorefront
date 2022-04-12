@@ -23,7 +23,7 @@
               <SfCollectedProduct
                 v-for="product in products"
                 :key="wishlistGetters.getItemSku(product)"
-                :image="wishlistGetters.getItemImage(product)"
+                :image="wishlistGetters.getItemImage(product).normal"
                 :title="wishlistGetters.getItemName(product)"
                 :regular-price="wishlistGetters.getItemPrice(product).regular"
                 :special-price="wishlistGetters.getItemPrice(product).special"
@@ -33,12 +33,6 @@
                 @click:remove="removeProductFromWishlist(product)"
                 class="collected-product"
               >
-               <template #configuration>
-                  <div class="collected-product__properties">
-                    <SfProperty v-for="(attribute, key) in wishlistGetters.getItemAttributes(product, ['color', 'size'])" :key="key" :name="key" :value="attribute"/>
-                  </div>
-                </template>
-                <template #input="{}">&nbsp;</template>
               </SfCollectedProduct>
             </transition-group>
           </div>

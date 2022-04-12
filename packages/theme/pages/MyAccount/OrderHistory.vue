@@ -48,6 +48,7 @@
         <SfTable class="products">
           <SfTableHeading>
             <SfTableHeader class="products__name">{{ $t('Product') }}</SfTableHeader>
+            <SfTableHeader>{{ $t('Variants') }}</SfTableHeader>
             <SfTableHeader>{{ $t('Quantity') }}</SfTableHeader>
             <SfTableHeader>{{ $t('Price') }}</SfTableHeader>
             <SfTableHeader>{{ 'Total' }}</SfTableHeader>
@@ -57,6 +58,17 @@
               <nuxt-link :to="'/product/'+orderGetters.getItemSku(item)">
                 {{orderGetters.getItemName(item)}}
               </nuxt-link>
+            </SfTableData>
+            <SfTableData class="table__data">
+              <div class="product-sku" v-if="item.type == 'configurable'">
+              <SfProperty
+                v-for="(attribute, key) in orderGetters.getItemAttributes(item, ['Color', 'Size'])"
+                :key="key"
+                :name="key"
+                :value="attribute"
+              />
+              </div>
+              <div class="product-sku" v-else> - </div>
             </SfTableData>
             <SfTableData>{{orderGetters.getItemQty(item)}}</SfTableData>
             <SfTableData>{{$n(orderGetters.getItemPrice(item), 'currency')}}</SfTableData>

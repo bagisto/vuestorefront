@@ -10,18 +10,18 @@
           <SfProductCard
             :title="productGetters.getName(product)"
             :image="productGetters.getCoverImage(product).normal"
-            :regular-price="$n(productGetters.getPrice(product).regular, 'currency')"
-            :special-price="productGetters.getPrice(product).special && $n(productGetters.getPrice(product).special, 'currency')"
+            :regular-price="productGetters.getRegularPrice(product)"
+            :special-price="productGetters.getSpecialPrice(product)"
             :max-rating="5"
             :score-rating="productGetters.getAverageRating(product)"
             :reviews-count="productGetters.getTotalReviews(product)"
-            :is-in-wishlist="isInWishlist({ product })"
-            @click:wishlist="!isInWishlist({ product }) ? addItemToWishlist({ product }) : removeProductFromWishlist(product)"
             :link="localePath(`/product/${productGetters.getId(product)}`)"
             class="product-card"
+            :is-in-wishlist="isInWishlist({ product })"
+            @click:wishlist="!isInWishlist({ product }) ? addItemToWishlist({ product }) : removeProductFromWishlist(product)"
             :show-add-to-cart-button="true"
             :is-added-to-cart="isInCart({ product })"
-            @click:add-to-cart="addProductToCart(product)"
+            @click:add-to-cart="addProductToCart({ product, quantity: 1 })"
           />
         </SfCarouselItem>
       </SfCarousel>
@@ -36,6 +36,7 @@ import {
   SfSection,
   SfLoader
 } from '@storefront-ui/vue';
+import { useRouter } from '@nuxtjs/composition-api';
 import { productGetters, useWishlist, useCart } from '@vue-storefront/bagisto';
 import { useUiNotification} from '~/composables';
 
@@ -53,19 +54,29 @@ export default {
     loading: Boolean
   },
   setup() {
+    const router = useRouter();
     const { send: sendNotification} = useUiNotification();
     const { addItem: addItemToCart, isInCart } = useCart();
     const { addItem: addItemToWishlist, isInWishlist, removeItem: removeItemFromWishlist } = useWishlist();
 
-    const addProductToCart = (product) => {
-      addItemToCart({ product, quantity: 1 });
-      sendNotification({
-        key: 'product_added',
-        message: 'Product added to cart successfully',
-        type: 'success',
-        title: 'Success!',
-        icon: 'check'
-      });
+    const addProductToCart = ({ product, quantity }) => {
+      if (product.type === 'configurable') {
+        sendNotification({
+          key: 'product_redirect',
+          message: 'Options are missing for this product.',
+          type: 'warning',
+          title: 'Warning!'
+        });
+        router.push(`/product/${productGetters.getId(product)}`);
+      } else {
+        addItemToCart({ product, quantity: quantity });
+        sendNotification({
+          key: 'product_added',
+          message: 'Product added to cart successfully',
+          type: 'success',
+          title: 'Success!'
+        });
+      }
     };
 
     const removeProductFromWishlist = (product) => {

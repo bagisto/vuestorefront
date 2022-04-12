@@ -12,7 +12,7 @@
           v-for="tableHeader in tableHeaders"
           :key="tableHeader"
           class="table__header"
-          :class="{ table__description: tableHeader === 'Description' }"
+          :class="{ table__description: tableHeader === 'Description', table__image: tableHeader === 'Variants' }"
         >
           {{ tableHeader }}
         </SfTableHeader>
@@ -28,7 +28,18 @@
             :alt="cartGetters.getItemName(item)"
             />
         </SfTableData>
-        <SfTableData class="table__data table__description table__data">
+        <SfTableData class="table__data table__description">
+          <div class="product-sku" v-if="item.type == 'configurable'">
+          <SfProperty
+            v-for="(attribute, key) in cartGetters.getItemAttributes(item, ['Color', 'Size'])"
+            :key="key"
+            :name="key"
+            :value="attribute"
+          />
+          </div>
+          <div class="product-sku" v-else> - </div>
+        </SfTableData>
+        <SfTableData class="table__data table__description">
           <div class="product-title">{{ cartGetters.getItemName(item) }}</div>
           <div class="product-sku">{{ cartGetters.getItemSku(item) }}</div>
         </SfTableData>
@@ -186,7 +197,7 @@ export default {
       loading,
       cartItems: computed(() => cartGetters.getItems(cart.value)),
       totals: computed(() => cartGetters.getTotals(cart.value)),
-      tableHeaders: ['Description', 'Quantity', 'Amount'],
+      tableHeaders: ['Variants', 'Description', 'Quantity', 'Amount'],
       cartGetters,
       processOrder
     };

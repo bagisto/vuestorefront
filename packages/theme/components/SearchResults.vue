@@ -48,7 +48,9 @@
                   :title="productGetters.getName(product)"
                   :link="localePath(`/product/${productGetters.getId(product)}`)"
                   :is-in-wishlist="isInWishlist({ product })"
+                  :is-added-to-cart="isInCart({ product })"
                   @click:wishlist="!isInWishlist({ product }) ? addItemToWishlist({ product }) : removeProductFromWishlist(product)"
+                  @click:add-to-cart="addToCart({ product, quantity: 1 })"
                 />
               </div>
             </SfScrollable>
@@ -66,7 +68,9 @@
                 :title="productGetters.getName(product)"
                 :link="localePath(`/product/${productGetters.getId(product)}`)"
                 :is-in-wishlist="isInWishlist({ product })"
+                :is-added-to-cart="isInCart({ product })"
                 @click:wishlist="!isInWishlist({ product }) ? addItemToWishlist({ product }) : removeProductFromWishlist(product)"
+                @click:add-to-cart="addToCart({ product, quantity: 1 })"
               />
             </div>
           </SfMegaMenuColumn>
@@ -100,8 +104,9 @@ import {
   SfButton,
   SfImage
 } from '@storefront-ui/vue';
-import { ref, watch, computed } from '@nuxtjs/composition-api';
-import { useWishlist, wishlistGetters, productGetters } from '@vue-storefront/bagisto';
+import { ref, watch, computed, useRouter } from '@nuxtjs/composition-api';
+import { useCart, useWishlist, wishlistGetters, productGetters } from '@vue-storefront/bagisto';
+import { useUiNotification} from '~/composables';
 
 export default {
   name: 'SearchResults',
@@ -129,9 +134,12 @@ export default {
     }
   },
   setup(props, { emit }) {
+    const router = useRouter();
+    const { send: sendNotification} = useUiNotification();
     const isSearchOpen = ref(props.visible);
     const products = computed(() => props.result?.products);
     const categories = computed(() => props.result?.categories);
+    const { addItem: addItemToCart, isInCart } = useCart();
     const { addItem: addItemToWishlist, isInWishlist, removeItem: removeItemFromWishlist, wishlist } = useWishlist();
 
     watch(() => props.visible, (newVal) => {
@@ -150,6 +158,26 @@ export default {
       removeItemFromWishlist({ product });
     };
 
+    const addToCart = ({ product, quantity }) => {
+      if (product.type === 'configurable') {
+        sendNotification({
+          key: 'product_redirect',
+          message: 'Options are missing for this product.',
+          type: 'warning',
+          title: 'Warning!'
+        });
+        router.push(`/product/${productGetters.getId(product)}`);
+      } else {
+        addItemToCart({ product, quantity: quantity });
+        sendNotification({
+          key: 'product_added',
+          message: 'Product added to cart successfully',
+          type: 'success',
+          title: 'Success!'
+        });
+      }
+    };
+
     return {
       isSearchOpen,
       productGetters,
@@ -157,7 +185,9 @@ export default {
       categories,
       addItemToWishlist,
       isInWishlist,
-      removeProductFromWishlist
+      removeProductFromWishlist,
+      addToCart,
+      isInCart
     };
   }
 };

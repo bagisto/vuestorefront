@@ -24,6 +24,7 @@ const params: UseCartFactoryParams<Cart, CartItem, Product> = {
     const data = {
       product, quantity, customQuery
     };
+
     const addItemToCartResults = await context.$bagisto.api.addToCart(data);
     params.load(context, {});
     return addItemToCartResults?.data?.addItemToCart?.cart || null;

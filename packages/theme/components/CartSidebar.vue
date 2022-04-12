@@ -22,7 +22,7 @@
               <SfCollectedProduct
                 v-for="itemProduct in cartItems"
                 v-e2e="'collected-product'"
-                :key="cartGetters.getItemSku(itemProduct)"
+                :key="cartGetters.getItemId(itemProduct)"
                 :image="cartGetters.getItemImage(itemProduct).small"
                 :title="cartGetters.getItemName(itemProduct)"
                 :regular-price="$n(cartGetters.getItemPrice(itemProduct).regular, 'currency')"
@@ -31,10 +31,10 @@
                 @click:remove="handleRemove({product: itemProduct})"
                 class="collected-product"
               >
-                <template #configuration>
+                <template #configuration v-if="itemProduct.type == 'configurable'">
                   <div class="collected-product__properties">
                     <SfProperty
-                      v-for="(attribute, key) in cartGetters.getItemAttributes(itemProduct, ['color', 'size'])"
+                      v-for="(attribute, key) in cartGetters.getItemAttributes(itemProduct)"
                       :key="key"
                       :name="key"
                       :value="attribute"
@@ -51,8 +51,6 @@
                     />
                   </div>
                 </template>
-                <!-- @TODO: remove if https://github.com/vuestorefront/storefront-ui/issues/2022 is done -->
-                <template #more-actions>{{  }}</template>
               </SfCollectedProduct>
             </transition-group>
           </div>
@@ -280,7 +278,7 @@ export default {
   margin: 0 0 var(--spacer-sm) 0;
   &__properties {
     margin: var(--spacer-xs) 0 0 0;
-    display: flex;
+    display: block;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;

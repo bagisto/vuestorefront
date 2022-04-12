@@ -12,7 +12,7 @@ import { useCart } from '../useCart';
 const params: UseShippingParams<ShippingAddress, AddParams> = {
   provide() {
     return {
-      cart: useCart(),
+      cart: useCart()
     };
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,6 +37,7 @@ const params: UseShippingParams<ShippingAddress, AddParams> = {
     };
 
     const saveShippingResults = await context.$bagisto.api.saveShippingAddress(params);
+
     if (!saveShippingResults?.data) {
       await context?.cart.setCart(null);
       await context.cart.load();

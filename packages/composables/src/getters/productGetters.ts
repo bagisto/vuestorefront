@@ -206,16 +206,30 @@ function getAdditionalData(product: Product): AgnosticAttribute[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getConfigurableData(product: Product): AgnosticAttribute[] {
+function getConfigurableData(product: Product): any {
   if (!product) {
-    return [];
+    return null;
   }
 
   if (typeof product !== 'undefined' && typeof product.configutableData !== 'undefined') {
-    return product.configutableData;
+    const configAttributes = [];
+    for (const attribute of product.configutableData.attributes) {
+      configAttributes.push({
+        id: attribute.id,
+        code: attribute.code,
+        label: attribute.label,
+        options: attribute.options,
+        swatchType: attribute.swatchType
+      });
+    }
+
+    return {
+      configData: product.configutableData,
+      configAttributes
+    };
   }
 
-  return [];
+  return null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

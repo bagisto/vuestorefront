@@ -154,5 +154,6 @@ export default {
   'show more': 'mehr anzeigen',
   'hide': 'ausblenden',
   'Change to grid view': 'Zur Rasteransicht wechseln',
-  'Change to list view': 'Zur Listenansicht wechseln'
+  'Change to list view': 'Zur Listenansicht wechseln',
+  'Add to cart': 'In den Warenkorb legen'
 };

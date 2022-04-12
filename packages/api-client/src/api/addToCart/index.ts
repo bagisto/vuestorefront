@@ -16,6 +16,11 @@ export async function addToCart(context, params) {
     input: inputFilters
   };
 
+  if (params?.customQuery?.selectedConfigurableOption && params?.customQuery?.superAttribute) {
+    variables.input.selectedConfigurableOption = params?.customQuery?.selectedConfigurableOption;
+    variables.input.superAttribute = params?.customQuery?.superAttribute;
+  }
+
   try {
     return await context.client
       .mutate({

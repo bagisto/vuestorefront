@@ -174,7 +174,8 @@ import {
   useWishlist
 } from '@vue-storefront/bagisto';
 import {
-  computed
+  computed,
+  useRouter
 } from '@nuxtjs/composition-api';
 import { onSSR } from '@vue-storefront/core';
 import { useUiNotification} from '~/composables';
@@ -203,6 +204,7 @@ export default {
     SfLoader
   },
   setup() {
+    const router = useRouter();
     const { $config } = useContext();
     const { send: sendNotification} = useUiNotification();
     const { toggleNewsletterModal } = useUiState();
@@ -222,14 +224,23 @@ export default {
     } = useProduct('featuredProductResult');
 
     const addProductToCart = (product) => {
-      addItemToCart({ product, quantity: 1 });
-      sendNotification({
-        key: 'product_added',
-        message: 'Product added to cart successfully',
-        type: 'success',
-        title: 'Success!',
-        icon: 'check'
-      });
+      if (product.type === 'configurable') {
+        sendNotification({
+          key: 'product_redirect',
+          message: 'Options are missing for this product.',
+          type: 'warning',
+          title: 'Warning!'
+        });
+        router.push(`/product/${productGetters.getId(product)}`);
+      } else {
+        addItemToCart({ product, quantity: 1 });
+        sendNotification({
+          key: 'product_added',
+          message: 'Product added to cart successfully',
+          type: 'success',
+          title: 'Success!'
+        });
+      }
     };
 
     const removeProductFromWishlist = (product) => {
